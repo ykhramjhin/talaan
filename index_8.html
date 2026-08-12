@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Talaan — Philippine Community Data System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo-900:#131f38;
+    --indigo-800:#1b2a4a;
+    --indigo-700:#25396264;
+    --indigo-700-solid:#253962;
+    --gold-500:#e8a94d;
+    --gold-600:#cf8f30;
+    --terracotta-600:#c1502e;
+    --teal-600:#2f6e62;
+    --cream-50:#fbfaf6;
+    --cream-100:#f6f3ec;
+    --ink-900:#1c1a16;
+    --ink-600:#5b5748;
+    --line:#e4ddcd;
+    --radius:10px;
+    --weave: repeating-linear-gradient(45deg, rgba(232,169,77,0.14) 0 2px, transparent 2px 16px),
+             repeating-linear-gradient(-45deg, rgba(193,80,46,0.14) 0 2px, transparent 2px 16px);
+    --weave-soft: repeating-linear-gradient(45deg, rgba(232,169,77,0.07) 0 2px, transparent 2px 16px),
+             repeating-linear-gradient(-45deg, rgba(47,110,98,0.07) 0 2px, transparent 2px 16px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--cream-100);
+    color:var(--ink-900);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--gold-500);color:var(--indigo-900);}
+
+  /* ---------- Utility ---------- */
+  .hidden{display:none !important;}
+  .btn{
+    border:none;border-radius:8px;padding:12px 20px;font-weight:600;font-size:14px;
+    transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--gold-500);color:var(--indigo-900);}
+  .btn-primary:hover{background:var(--gold-600);}
+  .btn-outline{background:transparent;border:1.5px solid var(--indigo-800);color:var(--indigo-800);}
+  .btn-outline:hover{background:var(--indigo-800);color:#fff;}
+  .btn-danger{background:#fff;border:1.5px solid var(--terracotta-600);color:var(--terracotta-600);}
+  .btn-danger:hover{background:var(--terracotta-600);color:#fff;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-600);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;}
+  .field input, .field select{
+    width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;
+    font-size:14.5px;font-family:'Inter',sans-serif;background:#fff;color:var(--ink-900);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus, .field select:focus{
+    outline:none;border-color:var(--gold-500);box-shadow:0 0 0 3px rgba(232,169,77,.25);
+  }
+  .field-row{display:grid;gap:14px;}
+  .row-2{grid-template-columns:1fr 1fr;}
+  .row-3{grid-template-columns:1fr 1fr 1fr;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);}
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--indigo-900);color:#fff;
+    padding:14px 20px;border-radius:8px;font-size:14px;font-weight:500;
+    box-shadow:0 12px 28px rgba(0,0,0,.22);z-index:999;opacity:0;transform:translateY(10px);
+    transition:opacity .25s ease, transform .25s ease;border-left:4px solid var(--gold-500);
+    max-width:320px;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  /* ---------- Logo ---------- */
+  .logo-mark{display:inline-flex;align-items:center;gap:10px;}
+  .logo-icon{flex-shrink:0;}
+  .logo-word{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.01em;}
+  .logo-tag{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.72;font-weight:500;}
+
+  /* ================= LOGIN ================= */
+  #login-view{
+    min-height:100vh;display:grid;grid-template-columns:1fr 1fr;
+  }
+  .login-art{
+    background:linear-gradient(175deg, var(--indigo-900), var(--indigo-800) 60%, var(--indigo-700-solid));
+    position:relative;overflow:hidden;color:#fbf8f2;
+    display:flex;flex-direction:column;justify-content:space-between;padding:48px;
+  }
+  .login-art::before{
+    content:"";position:absolute;inset:0;background-image:var(--weave);pointer-events:none;
+  }
+  .login-art::after{
+    content:"";position:absolute;right:-120px;bottom:-120px;width:420px;height:420px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, rgba(232,169,77,.25), transparent 70%);
+  }
+  .art-top, .art-bottom{position:relative;z-index:1;}
+  .art-bottom h1{font-size:30px;line-height:1.28;max-width:420px;margin:0 0 14px;font-weight:600;}
+  .art-bottom p{font-size:14.5px;line-height:1.6;max-width:400px;color:#d9d2c3;margin:0;}
+  .region-pins{display:flex;gap:8px;margin-top:26px;flex-wrap:wrap;position:relative;z-index:1;}
+  .region-pins span{
+    font-size:11px;font-family:'JetBrains Mono',monospace;border:1px solid rgba(255,255,255,.25);
+    padding:5px 10px;border-radius:100px;color:#e9e2d2;letter-spacing:.02em;
+  }
+
+  .login-form-wrap{display:flex;align-items:center;justify-content:center;padding:32px;background:var(--cream-50);}
+  .login-form{width:100%;max-width:380px;}
+  .login-form .eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--terracotta-600);font-weight:700;margin-bottom:8px;}
+  .login-form h2{margin:0 0 6px;font-size:24px;}
+  .login-form .sub{color:var(--ink-600);font-size:14px;margin:0 0 28px;}
+  .pw-wrap{position:relative;}
+  .pw-wrap button{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:12px;font-weight:600;color:var(--indigo-800);}
+  .captcha-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;}
+  #captchaCanvas{border-radius:8px;border:1.5px solid var(--line);}
+  .captcha-refresh{
+    width:42px;height:42px;border-radius:8px;border:1.5px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .captcha-refresh:hover{border-color:var(--gold-500);}
+  .login-links{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:13px;}
+  .login-links a{color:var(--indigo-800);text-decoration:none;font-weight:600;}
+  .login-links a:hover{text-decoration:underline;}
+  .demo-hint{
+    margin-top:24px;padding:12px 14px;border-radius:8px;background:var(--cream-100);
+    border:1px dashed var(--line);font-size:12.5px;color:var(--ink-600);line-height:1.6;
+  }
+  .demo-hint b{color:var(--ink-900);font-family:'JetBrains Mono',monospace;}
+  .error-msg{
+    background:#fdecec;border:1px solid #f2b9b0;color:var(--terracotta-600);
+    padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:16px;font-weight:500;
+  }
+
+  /* ================= APP SHELL ================= */
+  #app-view{min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{
+    background:var(--indigo-900);color:#fff;padding:0 24px;height:66px;
+    display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;flex-shrink:0;
+  }
+  .topbar::before{content:"";position:absolute;inset:0;background-image:var(--weave-soft);opacity:.6;pointer-events:none;}
+  .topbar > *{position:relative;z-index:1;}
+  .topbar .logo-word{color:#fff;}
+  .topbar .logo-tag{color:#c9c1ac;}
+  .user-chip{display:flex;align-items:center;gap:12px;}
+  .user-avatar{
+    width:36px;height:36px;border-radius:50%;background:var(--gold-500);color:var(--indigo-900);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Space Grotesk',sans-serif;
+  }
+  .user-info{line-height:1.3;}
+  .user-info .uname{font-size:13.5px;font-weight:600;}
+  .user-info .urole{font-size:11px;color:#c9c1ac;}
+
+  .shell{flex:1;display:flex;min-height:0;}
+  .sidebar{
+    width:230px;background:#fff;border-right:1px solid var(--line);padding:20px 14px;flex-shrink:0;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:8px;margin-bottom:4px;
+    font-size:14px;font-weight:600;color:var(--ink-600);cursor:pointer;transition:all .15s ease;
+    border:1px solid transparent;
+  }
+  .nav-item svg{flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--cream-100);color:var(--ink-900);}
+  .nav-item.active{background:var(--indigo-900);color:#fff;}
+  .nav-item.active svg{opacity:1;}
+  .nav-item.logout{margin-top:18px;border-top:1px solid var(--line);border-radius:0;padding-top:16px;color:var(--terracotta-600);}
+  .nav-item.logout:hover{background:#fdecec;}
+
+  .main{flex:1;overflow-y:auto;padding:30px 34px;}
+  .view-header{margin-bottom:24px;}
+  .view-header .eyebrow{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--terracotta-600);font-weight:700;margin-bottom:6px;}
+  .view-header h2{margin:0 0 4px;font-size:24px;}
+  .view-header p{margin:0;color:var(--ink-600);font-size:14px;}
+
+  /* ---- Dashboard ---- */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .stat-card{padding:18px 20px;position:relative;overflow:hidden;}
+  .stat-card .stat-label{font-size:12px;color:var(--ink-600);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .stat-card .stat-value{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;margin-top:6px;}
+  .stat-card .stat-bar{position:absolute;left:0;top:0;bottom:0;width:4px;}
+  .c-indigo{background:var(--indigo-800);} .c-gold{background:var(--gold-500);}
+  .c-teal{background:var(--teal-600);} .c-terra{background:var(--terracotta-600);}
+
+  .chart-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-bottom:16px;}
+  .chart-grid-3{grid-template-columns:repeat(3,1fr);}
+  .chart-card{padding:20px;}
+  .chart-card h3{margin:0 0 4px;font-size:15px;}
+  .chart-card .chart-note{font-size:12px;color:var(--ink-600);margin:0 0 14px;}
+  .chart-card canvas{max-height:220px;}
+  .chart-full{grid-column:1 / -1;}
+  .chart-canvas-wrap{width:100%;}
+  .chart-full.pie-mode .chart-canvas-wrap{max-width:360px;margin:0 auto;}
+  .chart-mode-badge{
+    display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    background:var(--gold-500);color:var(--indigo-900);padding:2px 9px;border-radius:100px;
+    margin-left:8px;vertical-align:middle;position:relative;top:-1px;
+  }
+
+  /* Custom bar rows (no charting library) */
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-row .bar-label{width:170px;flex-shrink:0;font-size:12.5px;font-weight:600;color:var(--ink-600);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-row .bar-track{flex:1;background:var(--cream-100);border-radius:4px;height:14px;overflow:hidden;}
+  .bar-row .bar-fill{height:100%;border-radius:4px;background:var(--indigo-800);transition:width .3s ease;}
+  .bar-row .bar-value{width:32px;text-align:right;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:11.5px;}
+
+  /* Custom pie canvases (no charting library) */
+  #regionChart, #ageChart, #genderChart, #maritalChart{
+    display:block;width:100%;max-width:190px;aspect-ratio:1/1;margin:0 auto;max-height:none;
+  }
+  .chart-legend{
+    display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:14px;justify-content:center;
+  }
+  .chart-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-900);}
+  .chart-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+  .filter-bar{
+    display:flex;align-items:flex-end;gap:14px;padding:16px 20px;margin-bottom:20px;flex-wrap:wrap;
+    background-image:var(--weave-soft);
+  }
+  .filter-bar-label{
+    display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--indigo-800);padding-bottom:11px;flex-shrink:0;
+  }
+  .filter-field{margin-bottom:0;min-width:170px;flex:1;}
+  .filter-field label{margin-bottom:5px;}
+  .filter-count{margin-left:auto;font-size:12px;color:var(--ink-600);padding-bottom:12px;white-space:nowrap;}
+  @media(max-width:900px){
+    .chart-grid-3{grid-template-columns:1fr;}
+    .filter-count{margin-left:0;}
+  }
+
+  /* ---- Forms / tables ---- */
+  .form-section{margin-bottom:26px;}
+  .form-section .section-title{
+    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--indigo-800);
+    display:flex;align-items:center;gap:8px;margin-bottom:14px;
+  }
+  .form-section .section-title::after{content:"";flex:1;height:1px;background:var(--line);}
+  .form-card{padding:26px;max-width:820px;}
+
+  .table-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;}
+  .search-box{position:relative;max-width:280px;flex:1;}
+  .search-box input{width:100%;padding:10px 12px 10px 34px;border:1.5px solid var(--line);border-radius:8px;font-size:13.5px;}
+  .search-box svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-600);
+    padding:10px 14px;border-bottom:1.5px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:hover{background:var(--cream-100);}
+  .pill{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11.5px;font-weight:600;}
+  .pill-male{background:#e6eefb;color:#2c5aa0;}
+  .pill-female{background:#fbe9f1;color:#a63b73;}
+  .pill-other{background:#eee7fb;color:#6a4bb5;}
+  .pill-admin{background:#fdf1de;color:#9a6a12;}
+  .pill-encoder{background:#e6f2ef;color:#1f6355;}
+  .row-del{background:none;border:none;color:var(--terracotta-600);font-size:12.5px;font-weight:600;}
+  .row-del:hover{text-decoration:underline;}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--ink-600);}
+  .empty-state svg{opacity:.35;margin-bottom:10px;}
+
+  .activity-list{list-style:none;margin:0;padding:0;}
+  .activity-list li{
+    display:flex;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line);align-items:flex-start;
+  }
+  .activity-dot{width:9px;height:9px;border-radius:50%;background:var(--gold-500);margin-top:6px;flex-shrink:0;}
+  .activity-text{font-size:14px;}
+  .activity-text b{font-weight:600;}
+  .activity-time{font-size:11.5px;color:var(--ink-600);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+
+  /* ---- Modal ---- */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(19,31,56,.55);display:flex;align-items:center;justify-content:center;
+    z-index:900;padding:20px;
+  }
+  .modal{background:#fff;border-radius:12px;max-width:420px;width:100%;padding:28px;position:relative;}
+  .modal h3{margin:0 0 10px;font-size:18px;}
+  .modal p{font-size:14px;color:var(--ink-600);line-height:1.6;margin:0 0 20px;}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;color:var(--ink-600);}
+
+  footer.brand-strip{height:6px;background-image:var(--weave);flex-shrink:0;}
+
+  @media(max-width:900px){
+    #login-view{grid-template-columns:1fr;}
+    .login-art{display:none;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .chart-grid{grid-template-columns:1fr;}
+    .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%;height:auto;
+      display:flex;overflow-x:auto;padding:8px;border-right:none;border-top:1px solid var(--line);z-index:80;}
+    .nav-item{flex-direction:column;font-size:10.5px;padding:8px 12px;white-space:nowrap;gap:4px;margin-bottom:0;}
+    .nav-item.logout{margin-top:0;border-top:none;padding-top:8px;}
+    .main{padding-bottom:90px;}
+    .row-2,.row-3{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN VIEW ============ -->
+<div id="login-view">
+  <div class="login-art">
+    <div class="art-top">
+      <div class="logo-mark">
+        <svg class="logo-icon" width="34" height="34" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="9" fill="#e8a94d"/>
+          <path d="M20 6 L31 20 L20 34 L9 20 Z" fill="#1b2a4a"/>
+          <path d="M20 13 L26 20 L20 27 L14 20 Z" fill="#e8a94d"/>
+        </svg>
+        <div>
+          <div class="logo-word" style="color:#fff;">Talaan</div>
+          <div class="logo-tag" style="color:#c9c1ac;">Philippine Community Data System</div>
+        </div>
+      </div>
+    </div>
+    <div class="art-bottom">
+      <h1>Every barangay counted. Every name on record.</h1>
+      <p>Talaan brings household and demographic data collection for communities across the Philippines into one clean, region-by-region registry — from Batanes to Tawi-Tawi.</p>
+      <div class="region-pins">
+        <span>NCR</span><span>Region III</span><span>Region VII</span><span>BARMM</span><span>+13 more</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-form-wrap">
+    <form class="login-form" id="loginForm" autocomplete="off">
+      <div class="eyebrow">Sign in</div>
+      <h2>Welcome back, Encoder</h2>
+      <p class="sub">Log in to continue collecting and reviewing population records.</p>
+
+      <div id="loginError"></div>
+
+      <div class="field">
+        <label for="loginUsername">Username</label>
+        <input type="text" id="loginUsername" placeholder="e.g. admin" required>
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+          <button type="button" id="togglePw">SHOW</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="captchaInput">Captcha</label>
+        <div class="captcha-row">
+          <canvas id="captchaCanvas" width="140" height="46"></canvas>
+          <button type="button" class="captcha-refresh" id="refreshCaptcha" title="Get a new code">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1b2a4a" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 0 1 15.3-6.5L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.3 6.5L3 16m0 5v-5h5"/></svg>
+          </button>
+          <input type="text" id="captchaInput" placeholder="Enter code" style="flex:1;" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;font-size:15px;padding:13px;">Log In</button>
+
+      <div class="login-links">
+        <a href="#" id="forgotPwLink">Forgot password?</a>
+        <span>
+          <a href="#" id="fillAdminLink">Use admin</a> · <a href="#" id="fillEncoderLink">Use encoder</a>
+        </span>
+      </div>
+
+      <div class="demo-hint">
+        Prototype demo accounts — <b>admin / admin123</b> (Administrator, full access) and <b>encoder / encoder123</b> (Encoder, needs a PIN to delete records — demo PIN <b>2468</b>). Data is stored locally in this browser only.
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD MODAL ============ -->
+<div id="forgotModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="modal-close" id="closeForgotModal">✕</button>
+    <h3>Reset your password</h3>
+    <p>This is a prototype, so no email is actually sent. In a production build, a reset link would be delivered to the email on file for your account. For now, you can sign in with the demo account or update your password from Account Settings once logged in.</p>
+    <button class="btn btn-primary" id="closeForgotModal2" style="width:100%;">Got it</button>
+  </div>
+</div>
+
+<!-- ============ PIN AUTHORIZATION MODAL (encoder delete) ============ -->
+<div id="pinModal" class="modal-backdrop hidden">
+  <div class="modal">
+    <button class="modal-close" id="closePinModal">✕</button>
+    <h3>Admin PIN required</h3>
+    <p>Deleting a record needs authorization from an administrator. Enter the current deletion PIN to continue.</p>
+    <div id="pinModalError"></div>
+    <div class="field">
+      <label for="pinModalInput">PIN Code</label>
+      <input type="password" inputmode="numeric" id="pinModalInput" maxlength="6" placeholder="••••">
+    </div>
+    <button class="btn btn-primary" id="confirmPinDelete" style="width:100%;">Confirm Delete</button>
+  </div>
+</div>
+
+<!-- ============ APP VIEW ============ -->
+<div id="app-view" class="hidden">
+  <div class="topbar">
+    <div class="logo-mark">
+      <svg class="logo-icon" width="30" height="30" viewBox="0 0 40 40" fill="none">
+        <rect width="40" height="40" rx="9" fill="#e8a94d"/>
+        <path d="M20 6 L31 20 L20 34 L9 20 Z" fill="#1b2a4a"/>
+        <path d="M20 13 L26 20 L20 27 L14 20 Z" fill="#e8a94d"/>
+      </svg>
+      <div>
+        <div class="logo-word">Talaan</div>
+        <div class="logo-tag">Community Data System</div>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="user-info" style="text-align:right;">
+        <div class="uname" id="topUserName">—</div>
+        <div class="urole" id="topUserRole">—</div>
+      </div>
+      <div class="user-avatar" id="topUserAvatar">?</div>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="sidebar">
+      <div class="nav-item active" data-view="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="add-data">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        Add Data
+      </div>
+      <div class="nav-item" data-view="data-encoded">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        Data Encoded
+      </div>
+      <div class="nav-item" data-view="activity">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Activity
+      </div>
+      <div class="nav-item hidden" data-view="user-management" id="navUserManagement">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="3"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><circle cx="17" cy="7" r="3"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+        User Management
+      </div>
+      <div class="nav-item" data-view="settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Account Settings
+      </div>
+      <div class="nav-item logout" id="logoutBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        Logout
+      </div>
+    </div>
+
+    <div class="main">
+
+      <!-- ---- DASHBOARD ---- -->
+      <div class="view" id="view-dashboard">
+        <div class="view-header">
+          <div class="eyebrow">Overview</div>
+          <h2>Dashboard</h2>
+          <p>Snapshot of everyone currently on record, broken down by region, age, and gender.</p>
+        </div>
+
+        <div class="card filter-bar">
+          <div class="filter-bar-label">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b5748" stroke-width="2"><path d="M4 4h16l-6 8v6l-4 2v-8L4 4z"/></svg>
+            Filter by
+          </div>
+          <div class="field filter-field">
+            <label for="filterRegion">Region</label>
+            <select id="filterRegion"><option value="">All regions</option></select>
+          </div>
+          <div class="field filter-field">
+            <label for="filterGender">Gender</label>
+            <select id="filterGender">
+              <option value="">All genders</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field filter-field">
+            <label for="filterMarital">Marital Status</label>
+            <select id="filterMarital">
+              <option value="">All statuses</option>
+              <option>Single</option><option>Married</option><option>Widowed</option>
+              <option>Separated</option><option>Annulled</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-outline" id="clearFiltersBtn" style="padding:10px 16px;">Clear</button>
+          <div class="filter-count mono" id="filterCountLabel">Showing all records</div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="card stat-card"><div class="stat-bar c-indigo"></div>
+            <div class="stat-label">Total Individuals</div>
+            <div class="stat-value" id="statTotal">0</div>
+          </div>
+          <div class="card stat-card"><div class="stat-bar c-gold"></div>
+            <div class="stat-label">Regions Covered</div>
+            <div class="stat-value" id="statRegions">0</div>
+          </div>
+          <div class="card stat-card"><div class="stat-bar c-teal"></div>
+            <div class="stat-label">Average Age</div>
+            <div class="stat-value" id="statAvgAge">0</div>
+          </div>
+          <div class="card stat-card"><div class="stat-bar c-terra"></div>
+            <div class="stat-label">Female : Male Ratio</div>
+            <div class="stat-value" id="statRatio">—</div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-card chart-full" id="regionChartCard">
+            <h3>Population by Region <span class="chart-mode-badge hidden" id="regionModeBadge">Pie view — filter active</span></h3>
+            <p class="chart-note">Number of individuals on record, grouped by administrative region.</p>
+            <div class="chart-canvas-wrap" id="regionChartWrap">
+              <div id="regionBarList"></div>
+              <div id="regionPieWrap" class="hidden" style="text-align:center;">
+                <canvas id="regionChart"></canvas>
+                <div class="chart-legend" id="regionChartLegend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-grid chart-grid-3">
+          <div class="card chart-card">
+            <h3>Age Distribution</h3>
+            <p class="chart-note">Individuals grouped by age bracket.</p>
+            <canvas id="ageChart"></canvas>
+            <div class="chart-legend" id="ageChartLegend"></div>
+          </div>
+          <div class="card chart-card">
+            <h3>Gender Distribution</h3>
+            <p class="chart-note">Share of records by gender.</p>
+            <canvas id="genderChart"></canvas>
+            <div class="chart-legend" id="genderChartLegend"></div>
+          </div>
+          <div class="card chart-card">
+            <h3>Marital Status</h3>
+            <p class="chart-note">Share of records by marital status.</p>
+            <canvas id="maritalChart"></canvas>
+            <div class="chart-legend" id="maritalChartLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- ADD DATA ---- -->
+      <div class="view hidden" id="view-add-data">
+        <div class="view-header">
+          <div class="eyebrow">Encode</div>
+          <h2>Add Data</h2>
+          <p>Register a new individual. Fields marked with the section headers below are all required.</p>
+        </div>
+
+        <form class="card form-card" id="addDataForm">
+          <div class="form-section">
+            <div class="section-title">Personal Details</div>
+            <div class="field-row row-3">
+              <div class="field"><label for="fFirst">First Name</label><input id="fFirst" required></div>
+              <div class="field"><label for="fMiddle">Middle Name</label><input id="fMiddle"></div>
+              <div class="field"><label for="fSurname">Surname</label><input id="fSurname" required></div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Address</div>
+            <div class="field-row row-2">
+              <div class="field"><label for="fBarangay">Barangay</label><input id="fBarangay" required></div>
+              <div class="field"><label for="fStreet">Street</label><input id="fStreet"></div>
+            </div>
+            <div class="field-row row-3">
+              <div class="field"><label for="fDistrict">District</label><input id="fDistrict"></div>
+              <div class="field"><label for="fMunicipality">Municipality / City</label><input id="fMunicipality" required></div>
+              <div class="field">
+                <label for="fRegion">Region</label>
+                <select id="fRegion" required>
+                  <option value="">Select region</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="section-title">Other Details</div>
+            <div class="field-row row-2">
+              <div class="field"><label for="fBirthdate">Birthdate</label><input type="date" id="fBirthdate" required></div>
+              <div class="field"><label for="fAge">Age</label><input type="number" id="fAge" min="0" max="130" required></div>
+            </div>
+            <div class="field-row row-2">
+              <div class="field">
+                <label for="fGender">Gender</label>
+                <select id="fGender" required>
+                  <option value="">Select gender</option>
+                  <option>Male</option><option>Female</option><option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fMarital">Marital Status</label>
+                <select id="fMarital" required>
+                  <option value="">Select status</option>
+                  <option>Single</option><option>Married</option><option>Widowed</option>
+                  <option>Separated</option><option>Annulled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Record</button>
+          <button type="reset" class="btn btn-outline" style="margin-left:10px;">Clear Form</button>
+        </form>
+      </div>
+
+      <!-- ---- DATA ENCODED ---- -->
+      <div class="view hidden" id="view-data-encoded">
+        <div class="view-header">
+          <div class="eyebrow">Registry</div>
+          <h2>Data Encoded</h2>
+          <p>All individuals currently on record.</p>
+        </div>
+
+        <div class="card" style="padding:18px 20px;">
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5b5748" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="text" id="searchInput" placeholder="Search name or region…">
+            </div>
+            <div class="mono" style="font-size:12.5px;color:var(--ink-600);" id="recordCountLabel">0 records</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table id="dataTable">
+              <thead>
+                <tr><th>Name</th><th>Age</th><th>Gender</th><th>Municipality</th><th>Region</th><th>Encoded By</th><th>Date Encoded</th><th></th></tr>
+              </thead>
+              <tbody id="dataTableBody"></tbody>
+            </table>
+          </div>
+          <div id="dataEmptyState" class="empty-state hidden">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5b5748" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg>
+            <div>No records yet. Head to <b>Add Data</b> to encode your first entry.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- ACTIVITY ---- -->
+      <div class="view hidden" id="view-activity">
+        <div class="view-header">
+          <div class="eyebrow">Audit trail</div>
+          <h2>Activity</h2>
+          <p>Recent user account activity for this system.</p>
+        </div>
+        <div class="card" style="padding:6px 22px;">
+          <ul class="activity-list" id="activityList"></ul>
+        </div>
+      </div>
+
+      <!-- ---- USER MANAGEMENT (admin only) ---- -->
+      <div class="view hidden" id="view-user-management">
+        <div class="view-header">
+          <div class="eyebrow">Admin only</div>
+          <h2>User Management</h2>
+          <p>Create accounts, assign roles, and set the PIN encoders must enter before deleting a record.</p>
+        </div>
+
+        <div class="card form-card" style="margin-bottom:20px;">
+          <div class="section-title">Deletion PIN</div>
+          <p style="font-size:13px;color:var(--ink-600);margin:-6px 0 18px;max-width:520px;">
+            Encoders are prompted for this PIN before they can delete anything from Data Encoded. Admins can delete without it.
+          </p>
+          <form id="pinForm" class="field-row row-2" style="align-items:end;max-width:520px;">
+            <div class="field"><label for="newPin">New PIN (4–6 digits)</label><input type="password" inputmode="numeric" id="newPin" maxlength="6" placeholder="••••"></div>
+            <div class="field"><label for="confirmPin">Confirm PIN</label><input type="password" inputmode="numeric" id="confirmPin" maxlength="6" placeholder="••••"></div>
+            <div class="field" style="margin-bottom:16px;"><button type="submit" class="btn btn-primary" style="height:44px;width:100%;">Update PIN</button></div>
+          </form>
+        </div>
+
+        <div class="card form-card" style="margin-bottom:20px;">
+          <div class="section-title">Add User</div>
+          <form id="addUserForm" class="field-row row-3">
+            <div class="field"><label for="uUsername">Username</label><input id="uUsername" required></div>
+            <div class="field"><label for="uPassword">Password</label><input type="password" id="uPassword" required></div>
+            <div class="field">
+              <label for="uRole">Role</label>
+              <select id="uRole"><option value="encoder">Encoder</option><option value="admin">Admin</option></select>
+            </div>
+            <div class="field"><label for="uEmail">Email</label><input type="email" id="uEmail" required></div>
+            <div class="field"><label for="uContact">Contact Info</label><input id="uContact" placeholder="09XX XXX XXXX"></div>
+            <div class="field" style="display:flex;align-items:end;margin-bottom:16px;"><button type="submit" class="btn btn-primary" style="height:44px;width:100%;">Add User</button></div>
+          </form>
+        </div>
+
+        <div class="card" style="padding:18px 20px;">
+          <div class="table-toolbar">
+            <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--indigo-800);">All Users</div>
+            <div class="mono" style="font-size:12.5px;color:var(--ink-600);" id="userCountLabel">0 users</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table id="userTable">
+              <thead><tr><th>Username</th><th>Role</th><th>Email</th><th>Contact</th><th></th></tr></thead>
+              <tbody id="userTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- ACCOUNT SETTINGS ---- -->
+      <div class="view hidden" id="view-settings">
+        <div class="view-header">
+          <div class="eyebrow">Profile</div>
+          <h2>Account Settings</h2>
+          <p>Update your login and contact information.</p>
+        </div>
+        <form class="card form-card" id="settingsForm" style="max-width:560px;">
+          <div class="field-row row-2">
+            <div class="field"><label for="sUsername">Username</label><input id="sUsername" required></div>
+            <div class="field"><label for="sEmail">Email</label><input type="email" id="sEmail" required></div>
+          </div>
+          <div class="field"><label for="sContact">Contact Info</label><input id="sContact" placeholder="09XX XXX XXXX"></div>
+          <div class="field-row row-2">
+            <div class="field"><label for="sPassword">New Password</label><input type="password" id="sPassword" placeholder="Leave blank to keep current"></div>
+            <div class="field"><label for="sPasswordConfirm">Confirm New Password</label><input type="password" id="sPasswordConfirm"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="brand-strip"></footer>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   TALAAN — prototype front-end. All data lives in localStorage.
+   ============================================================ */
+
+const REGIONS = [
+  "NCR — National Capital Region",
+  "CAR — Cordillera Administrative Region",
+  "Region I — Ilocos Region",
+  "Region II — Cagayan Valley",
+  "Region III — Central Luzon",
+  "Region IV-A — CALABARZON",
+  "MIMAROPA Region",
+  "Region V — Bicol Region",
+  "Region VI — Western Visayas",
+  "Region VII — Central Visayas",
+  "Region VIII — Eastern Visayas",
+  "Region IX — Zamboanga Peninsula",
+  "Region X — Northern Mindanao",
+  "Region XI — Davao Region",
+  "Region XII — SOCCSKSARGEN",
+  "Region XIII — Caraga",
+  "BARMM"
+];
+
+const LS_USERS = "talaan_users";
+const LS_RECORDS = "talaan_records";
+const LS_ACTIVITY = "talaan_activity";
+const LS_SEED_VERSION = "talaan_seed_version";
+const LS_ADMIN_PIN = "talaan_admin_pin";
+const SS_SESSION = "talaan_session";
+const SEED_VERSION = "3"; // bump to regenerate demo users/records for everyone, once
+
+/* ---------- Random demo record generator ---------- */
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function randInt(min,max){ return min + Math.floor(Math.random()*(max-min+1)); }
+
+function generateDemoRecords(count){
+  const maleFirst = ["Juan","Jose","Mark","Ramon","Noel","Carlo","Dante","Pedro","Ariel","Ferdinand","Rico","Edgar","Rommel","Danilo","Jerome","Alvin","Bryan","Christian","Gil","Leo","Oscar","Renato","Victor","Wilfredo","Arnel"];
+  const femaleFirst = ["Maria","Ana","Rosa","Liza","Grace","Divina","Fe","Nora","Cristina","Josephine","Lourdes","Corazon","Angelica","Marites","Precious","Jasmine","Kristine","Erlinda","Susan","Teresita","Vilma","Elena","Carmela","Joan","Michelle"];
+  const otherFirst = ["Angel","Dominique","Kai","Robin","Sam","Ariel","Lian","Reign"];
+  const surnames = ["Santos","Reyes","Cruz","Garcia","Lopez","Ramos","Torres","Fernandez","Castillo","Gonzales","Flores","Rivera","Morales","Pantoja","Cabrera","Del Rosario","Marquez","Manalo","Dela Cruz","Bautista","Mendoza","Villanueva","Aquino","Domingo","Navarro","Pascual","Ocampo","Salazar","Ignacio","Herrera","Espino","Uy","Sy","Tan","Gutierrez","Aguilar","Ortiz","Castro","Valdez","Rosario"];
+  const barangays = ["Poblacion","San Isidro","Santo Niño","Bagong Silang","San Jose","Malinta","San Roque","Santa Cruz","San Antonio","San Vicente","Santo Rosario","Bagumbayan","Maligaya","San Miguel","Santa Rita","San Rafael"];
+  const streetNames = ["Rizal Street","Mabini Street","Bonifacio Street","Purok 1","Purok 2","Purok 3","Zone 1","Zone 2","Sampaguita Street","Ilang-Ilang Street","National Highway","Burgos Street"];
+
+  const regionMunicipalities = {
+    "NCR": ["Quezon City","Manila","Makati","Pasig","Taguig","Caloocan","Parañaque"],
+    "CAR": ["Baguio City","La Trinidad","Tabuk","Bontoc"],
+    "Region I": ["San Fernando","Laoag City","Dagupan City","Alaminos"],
+    "Region II": ["Tuguegarao City","Ilagan","Cauayan"],
+    "Region III": ["Angeles City","San Fernando","Malolos","Cabanatuan","Olongapo"],
+    "Region IV-A": ["Calamba","Antipolo","Lucena","Batangas City","Lipa City"],
+    "MIMAROPA Region": ["Calapan","Puerto Princesa","Odiongan","Boac"],
+    "Region V": ["Legazpi","Naga City","Sorsogon City","Daet"],
+    "Region VI": ["Iloilo City","Bacolod City","Roxas City","Kalibo"],
+    "Region VII": ["Cebu City","Mandaue","Lapu-Lapu","Tagbilaran"],
+    "Region VIII": ["Tacloban","Ormoc","Catbalogan","Maasin"],
+    "Region IX": ["Zamboanga City","Pagadian","Dipolog"],
+    "Region X": ["Cagayan de Oro","Iligan","Malaybalay","Valencia"],
+    "Region XI": ["Davao City","Tagum","Panabo","Digos"],
+    "Region XII": ["General Santos","Koronadal","Kidapawan","Tacurong"],
+    "Region XIII": ["Butuan City","Surigao City","Bislig"],
+    "BARMM": ["Cotabato City","Marawi City","Jolo","Bongao"]
+  };
+
+  const records = [];
+  for(let i=0;i<count;i++){
+    const region = REGIONS[i % REGIONS.length];
+    const regionKey = region.split("—")[0].trim();
+    const munis = regionMunicipalities[regionKey] || ["Poblacion"];
+
+    const genderRoll = Math.random();
+    const gender = genderRoll < 0.48 ? "Male" : (genderRoll < 0.96 ? "Female" : "Other");
+    const firstNamePool = gender === "Male" ? maleFirst : (gender === "Female" ? femaleFirst : otherFirst);
+
+    // Skew ages toward working-age adults, with a realistic spread of minors and seniors
+    const ageRoll = Math.random();
+    let age;
+    if(ageRoll < 0.22) age = randInt(0,17);
+    else if(ageRoll < 0.75) age = randInt(18,45);
+    else if(ageRoll < 0.92) age = randInt(46,60);
+    else age = randInt(61,88);
+
+    let maritalStatus;
+    if(age < 18) maritalStatus = "Single";
+    else if(age < 25) maritalStatus = pick(["Single","Single","Single","Married"]);
+    else if(age < 45) maritalStatus = pick(["Single","Married","Married","Married","Separated"]);
+    else if(age < 60) maritalStatus = pick(["Married","Married","Widowed","Separated","Annulled"]);
+    else maritalStatus = pick(["Married","Widowed","Widowed","Married"]);
+
+    const today = new Date();
+    const birthYear = today.getFullYear() - age;
+    const birthMonth = randInt(1,12);
+    const birthDay = randInt(1,28);
+    const birthdate = `${birthYear}-${String(birthMonth).padStart(2,"0")}-${String(birthDay).padStart(2,"0")}`;
+
+    const encodedDaysAgo = randInt(0,120);
+
+    records.push({
+      id: "REC-" + (2000+i),
+      firstName: pick(firstNamePool),
+      middleName: pick(surnames),
+      surname: pick(surnames),
+      barangay: pick(barangays),
+      street: pick(streetNames),
+      district: "District " + randInt(1,4),
+      municipality: pick(munis),
+      region: region,
+      age: age,
+      birthdate: birthdate,
+      gender: gender,
+      maritalStatus: maritalStatus,
+      encodedBy: "admin",
+      dateEncoded: new Date(Date.now() - encodedDaysAgo*86400000).toISOString()
+    });
+  }
+  return records;
+}
+
+/* ---------- Seed data on first run / version bump ---------- */
+function seedIfEmpty(){
+  const storedVersion = localStorage.getItem(LS_SEED_VERSION);
+  if(storedVersion !== SEED_VERSION){
+    localStorage.setItem(LS_USERS, JSON.stringify([
+      {username:"admin", password:"admin123", role:"admin", email:"admin@talaan.gov.ph", contact:"0917 123 4567"},
+      {username:"encoder", password:"encoder123", role:"encoder", email:"encoder@talaan.gov.ph", contact:"0917 987 6543"}
+    ]));
+    localStorage.setItem(LS_ADMIN_PIN, "2468");
+    localStorage.setItem(LS_RECORDS, JSON.stringify(generateDemoRecords(200)));
+    localStorage.setItem(LS_ACTIVITY, JSON.stringify([
+      {timestamp:new Date().toISOString(), user:"admin", action:"System initialized with 200 sample records and two demo accounts."}
+    ]));
+    localStorage.setItem(LS_SEED_VERSION, SEED_VERSION);
+  }
+}
+seedIfEmpty();
+
+function getUsers(){ return JSON.parse(localStorage.getItem(LS_USERS)); }
+function setUsers(u){ localStorage.setItem(LS_USERS, JSON.stringify(u)); }
+function getCurrentUser(){
+  const username = sessionStorage.getItem(SS_SESSION);
+  if(!username) return null;
+  return getUsers().find(u=>u.username === username) || null;
+}
+function getAdminPin(){ return localStorage.getItem(LS_ADMIN_PIN) || "1234"; }
+function setAdminPin(pin){ localStorage.setItem(LS_ADMIN_PIN, pin); }
+function getRecords(){ return JSON.parse(localStorage.getItem(LS_RECORDS)); }
+function setRecords(r){ localStorage.setItem(LS_RECORDS, JSON.stringify(r)); }
+function getActivity(){ return JSON.parse(localStorage.getItem(LS_ACTIVITY)); }
+function logActivity(action){
+  const list = getActivity();
+  const cu = getCurrentUser();
+  list.unshift({timestamp:new Date().toISOString(), user:(cu ? cu.username : "system"), action});
+  localStorage.setItem(LS_ACTIVITY, JSON.stringify(list.slice(0,200)));
+}
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+
+/* ---------- Captcha ---------- */
+let captchaText = "";
+function drawCaptcha(){
+  const canvas = document.getElementById("captchaCanvas");
+  const ctx = canvas.getContext("2d");
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  captchaText = "";
+  for(let i=0;i<5;i++) captchaText += chars[Math.floor(Math.random()*chars.length)];
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#f6f3ec";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  for(let i=0;i<5;i++){
+    ctx.strokeStyle = ["#e8a94d","#c1502e","#2f6e62","#1b2a4a"][i % 4];
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*canvas.width, Math.random()*canvas.height);
+    ctx.lineTo(Math.random()*canvas.width, Math.random()*canvas.height);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  const colors = ["#1b2a4a","#c1502e","#2f6e62","#cf8f30"];
+  for(let i=0;i<captchaText.length;i++){
+    ctx.save();
+    const x = 16 + i*22;
+    const y = 30 + (Math.random()*8 - 4);
+    ctx.translate(x,y);
+    ctx.rotate((Math.random()*0.5 - 0.25));
+    ctx.font = "bold 22px 'JetBrains Mono', monospace";
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fillText(captchaText[i], 0, 0);
+    ctx.restore();
+  }
+}
+drawCaptcha();
+document.getElementById("refreshCaptcha").addEventListener("click", drawCaptcha);
+
+/* ---------- Login ---------- */
+document.getElementById("togglePw").addEventListener("click", function(){
+  const pw = document.getElementById("loginPassword");
+  const show = pw.type === "password";
+  pw.type = show ? "text" : "password";
+  this.textContent = show ? "HIDE" : "SHOW";
+});
+
+document.getElementById("fillAdminLink").addEventListener("click", (e)=>{
+  e.preventDefault();
+  document.getElementById("loginUsername").value = "admin";
+  document.getElementById("loginPassword").value = "admin123";
+});
+document.getElementById("fillEncoderLink").addEventListener("click", (e)=>{
+  e.preventDefault();
+  document.getElementById("loginUsername").value = "encoder";
+  document.getElementById("loginPassword").value = "encoder123";
+});
+
+document.getElementById("forgotPwLink").addEventListener("click",(e)=>{
+  e.preventDefault();
+  document.getElementById("forgotModal").classList.remove("hidden");
+});
+document.getElementById("closeForgotModal").addEventListener("click", ()=>document.getElementById("forgotModal").classList.add("hidden"));
+document.getElementById("closeForgotModal2").addEventListener("click", ()=>document.getElementById("forgotModal").classList.add("hidden"));
+
+document.getElementById("loginForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const u = document.getElementById("loginUsername").value.trim();
+  const p = document.getElementById("loginPassword").value;
+  const cap = document.getElementById("captchaInput").value.trim();
+  const errBox = document.getElementById("loginError");
+  errBox.innerHTML = "";
+
+  if(cap.toUpperCase() !== captchaText.toUpperCase()){
+    errBox.innerHTML = '<div class="error-msg">The captcha code doesn\'t match. Please try again.</div>';
+    drawCaptcha();
+    document.getElementById("captchaInput").value = "";
+    return;
+  }
+
+  const stored = getUsers().find(usr=>usr.username === u);
+  if(!stored || p !== stored.password){
+    errBox.innerHTML = '<div class="error-msg">Incorrect username or password.</div>';
+    drawCaptcha();
+    document.getElementById("captchaInput").value = "";
+    return;
+  }
+
+  sessionStorage.setItem(SS_SESSION, u);
+  logActivity("Logged in.");
+  enterApp();
+});
+
+/* ---------- App shell / navigation ---------- */
+function enterApp(){
+  const user = getCurrentUser();
+  document.getElementById("login-view").classList.add("hidden");
+  document.getElementById("app-view").classList.remove("hidden");
+  document.getElementById("topUserName").textContent = user.username;
+  document.getElementById("topUserRole").textContent = user.role === "admin" ? "Administrator" : "Data Encoder";
+  document.getElementById("topUserAvatar").textContent = user.username.slice(0,2).toUpperCase();
+  document.getElementById("navUserManagement").classList.toggle("hidden", user.role !== "admin");
+  populateSettingsForm();
+  populateRegionSelect();
+  renderDashboard();
+  renderDataTable();
+  renderActivity();
+  if(user.role === "admin") renderUsers();
+  showView("dashboard");
+}
+
+function showView(name){
+  const user = getCurrentUser();
+  if(name === "user-management" && (!user || user.role !== "admin")){
+    toast("Only admins can access User Management.");
+    name = "dashboard";
+  }
+  document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));
+  document.getElementById("view-"+name).classList.remove("hidden");
+  document.querySelectorAll(".nav-item[data-view]").forEach(n=>{
+    n.classList.toggle("active", n.dataset.view === name);
+  });
+  if(name === "dashboard") renderDashboard();
+  if(name === "data-encoded") renderDataTable();
+  if(name === "activity") renderActivity();
+  if(name === "user-management") renderUsers();
+}
+
+document.querySelectorAll(".nav-item[data-view]").forEach(item=>{
+  item.addEventListener("click", ()=>showView(item.dataset.view));
+});
+
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  logActivity("Logged out.");
+  sessionStorage.removeItem(SS_SESSION);
+  document.getElementById("app-view").classList.add("hidden");
+  document.getElementById("login-view").classList.remove("hidden");
+  document.getElementById("loginForm").reset();
+  drawCaptcha();
+  toast("You have been logged out.");
+});
+
+/* ---------- Region select ---------- */
+function populateRegionSelect(){
+  const sel = document.getElementById("fRegion");
+  sel.innerHTML = '<option value="">Select region</option>' +
+    REGIONS.map(r=>`<option value="${r}">${r}</option>`).join("");
+
+  const filterSel = document.getElementById("filterRegion");
+  filterSel.innerHTML = '<option value="">All regions</option>' +
+    REGIONS.map(r=>{
+      const short = r.split("—")[0].trim();
+      return `<option value="${short}">${short}</option>`;
+    }).join("");
+}
+
+/* ---------- Dashboard filters ---------- */
+["filterRegion","filterGender","filterMarital"].forEach(id=>{
+  document.getElementById(id).addEventListener("change", renderDashboard);
+});
+document.getElementById("clearFiltersBtn").addEventListener("click", ()=>{
+  document.getElementById("filterRegion").value = "";
+  document.getElementById("filterGender").value = "";
+  document.getElementById("filterMarital").value = "";
+  renderDashboard();
+});
+
+function getFilteredRecords(){
+  const region = document.getElementById("filterRegion").value;
+  const gender = document.getElementById("filterGender").value;
+  const marital = document.getElementById("filterMarital").value;
+  return getRecords().filter(r=>{
+    if(region && r.region.split("—")[0].trim() !== region) return false;
+    if(gender && r.gender !== gender) return false;
+    if(marital && r.maritalStatus !== marital) return false;
+    return true;
+  });
+}
+
+/* ---------- Add Data ---------- */
+document.getElementById("fBirthdate").addEventListener("change", function(){
+  if(!this.value) return;
+  const bd = new Date(this.value);
+  const today = new Date();
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+  document.getElementById("fAge").value = age >= 0 ? age : "";
+});
+
+document.getElementById("addDataForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const records = getRecords();
+  const rec = {
+    id: "REC-" + Date.now(),
+    firstName: document.getElementById("fFirst").value.trim(),
+    middleName: document.getElementById("fMiddle").value.trim(),
+    surname: document.getElementById("fSurname").value.trim(),
+    barangay: document.getElementById("fBarangay").value.trim(),
+    street: document.getElementById("fStreet").value.trim(),
+    district: document.getElementById("fDistrict").value.trim(),
+    municipality: document.getElementById("fMunicipality").value.trim(),
+    region: document.getElementById("fRegion").value,
+    age: parseInt(document.getElementById("fAge").value, 10),
+    birthdate: document.getElementById("fBirthdate").value,
+    gender: document.getElementById("fGender").value,
+    maritalStatus: document.getElementById("fMarital").value,
+    encodedBy: getCurrentUser().username,
+    dateEncoded: new Date().toISOString()
+  };
+  records.push(rec);
+  setRecords(records);
+  logActivity(`Added record for <b>${rec.firstName} ${rec.surname}</b>.`);
+  toast("Record saved successfully.");
+  this.reset();
+  renderDashboard();
+  renderDataTable();
+});
+
+/* ---------- Data Encoded table ---------- */
+function renderDataTable(filter){
+  filter = (filter || document.getElementById("searchInput").value || "").toLowerCase();
+  const records = getRecords().slice().reverse();
+  const filtered = records.filter(r=>{
+    const name = `${r.firstName} ${r.middleName} ${r.surname}`.toLowerCase();
+    return name.includes(filter) || (r.region||"").toLowerCase().includes(filter) || (r.municipality||"").toLowerCase().includes(filter);
+  });
+  const body = document.getElementById("dataTableBody");
+  document.getElementById("recordCountLabel").textContent = filtered.length + " record" + (filtered.length===1?"":"s");
+
+  if(filtered.length === 0){
+    body.innerHTML = "";
+    document.getElementById("dataEmptyState").classList.remove("hidden");
+    document.getElementById("dataTable").classList.add("hidden");
+    return;
+  }
+  document.getElementById("dataEmptyState").classList.add("hidden");
+  document.getElementById("dataTable").classList.remove("hidden");
+
+  body.innerHTML = filtered.map(r=>{
+    const pillClass = r.gender === "Male" ? "pill-male" : (r.gender === "Female" ? "pill-female" : "pill-other");
+    const fullName = [r.firstName, r.middleName, r.surname].filter(Boolean).join(" ");
+    const dateStr = new Date(r.dateEncoded).toLocaleDateString("en-PH", {year:"numeric",month:"short",day:"numeric"});
+    return `<tr>
+      <td><b>${fullName}</b></td>
+      <td>${r.age}</td>
+      <td><span class="pill ${pillClass}">${r.gender}</span></td>
+      <td>${r.municipality}</td>
+      <td>${r.region.split("—")[0].trim()}</td>
+      <td>${r.encodedBy}</td>
+      <td class="mono">${dateStr}</td>
+      <td><button class="row-del" data-id="${r.id}">Delete</button></td>
+    </tr>`;
+  }).join("");
+
+  body.querySelectorAll(".row-del").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      const id = this.dataset.id;
+      const current = getCurrentUser();
+      if(current && current.role === "admin"){
+        performDelete(id, false);
+      } else {
+        openPinModal(id);
+      }
+    });
+  });
+}
+document.getElementById("searchInput").addEventListener("input", (e)=>renderDataTable(e.target.value));
+
+/* ---------- Delete + PIN authorization ---------- */
+function performDelete(id, viaPin){
+  let records = getRecords();
+  const rec = records.find(r=>r.id===id);
+  records = records.filter(r=>r.id!==id);
+  setRecords(records);
+  if(rec) logActivity(`Deleted record for <b>${rec.firstName} ${rec.surname}</b>.` + (viaPin ? " Authorized with admin PIN." : ""));
+  renderDataTable();
+  renderDashboard();
+  toast("Record deleted.");
+}
+
+let pendingDeleteId = null;
+function openPinModal(id){
+  pendingDeleteId = id;
+  document.getElementById("pinModalError").innerHTML = "";
+  document.getElementById("pinModalInput").value = "";
+  document.getElementById("pinModal").classList.remove("hidden");
+}
+function closePinModal(){
+  document.getElementById("pinModal").classList.add("hidden");
+  pendingDeleteId = null;
+}
+document.getElementById("closePinModal").addEventListener("click", closePinModal);
+document.getElementById("confirmPinDelete").addEventListener("click", function(){
+  const val = document.getElementById("pinModalInput").value.trim();
+  if(!pendingDeleteId) return;
+  if(val !== getAdminPin()){
+    document.getElementById("pinModalError").innerHTML = '<div class="error-msg">Incorrect PIN. Please try again.</div>';
+    document.getElementById("pinModalInput").value = "";
+    return;
+  }
+  const id = pendingDeleteId;
+  closePinModal();
+  performDelete(id, true);
+});
+
+/* ---------- Activity ---------- */
+function renderActivity(){
+  const list = getActivity();
+  const el = document.getElementById("activityList");
+  if(list.length === 0){
+    el.innerHTML = '<li class="activity-text" style="padding:20px 0;color:var(--ink-600);">No activity recorded yet.</li>';
+    return;
+  }
+  el.innerHTML = list.map(a=>{
+    const d = new Date(a.timestamp);
+    const time = d.toLocaleString("en-PH", {year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    return `<li>
+      <div class="activity-dot"></div>
+      <div>
+        <div class="activity-text"><b>${a.user}</b> — ${a.action}</div>
+        <div class="activity-time">${time}</div>
+      </div>
+    </li>`;
+  }).join("");
+}
+
+/* ---------- Account Settings ---------- */
+function populateSettingsForm(){
+  const u = getCurrentUser();
+  document.getElementById("sUsername").value = u.username;
+  document.getElementById("sEmail").value = u.email || "";
+  document.getElementById("sContact").value = u.contact || "";
+}
+document.getElementById("settingsForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const pw = document.getElementById("sPassword").value;
+  const pwc = document.getElementById("sPasswordConfirm").value;
+  if(pw && pw !== pwc){
+    toast("Passwords do not match.");
+    return;
+  }
+  const newUsername = document.getElementById("sUsername").value.trim();
+  const users = getUsers();
+  const current = getCurrentUser();
+  if(users.some(x=>x.username === newUsername && x.username !== current.username)){
+    toast("That username is already taken.");
+    return;
+  }
+  const u = users.find(x=>x.username === current.username);
+  u.username = newUsername;
+  u.email = document.getElementById("sEmail").value.trim();
+  u.contact = document.getElementById("sContact").value.trim();
+  if(pw) u.password = pw;
+  setUsers(users);
+  sessionStorage.setItem(SS_SESSION, u.username);
+  document.getElementById("topUserName").textContent = u.username;
+  document.getElementById("topUserAvatar").textContent = u.username.slice(0,2).toUpperCase();
+  document.getElementById("sPassword").value = "";
+  document.getElementById("sPasswordConfirm").value = "";
+  logActivity("Updated account settings.");
+  toast("Account settings saved.");
+  if(u.role === "admin") renderUsers();
+});
+
+/* ---------- User Management (admin only) ---------- */
+function renderUsers(){
+  const users = getUsers();
+  document.getElementById("userCountLabel").textContent = users.length + " user" + (users.length===1?"":"s");
+  document.getElementById("userTableBody").innerHTML = users.map(u=>{
+    const pillClass = u.role === "admin" ? "pill-admin" : "pill-encoder";
+    const roleLabel = u.role === "admin" ? "Admin" : "Encoder";
+    return `<tr>
+      <td><b>${u.username}</b></td>
+      <td><span class="pill ${pillClass}">${roleLabel}</span></td>
+      <td>${u.email || ""}</td>
+      <td>${u.contact || ""}</td>
+      <td><button class="row-del" data-username="${u.username}">Delete</button></td>
+    </tr>`;
+  }).join("");
+
+  document.querySelectorAll("#userTableBody .row-del").forEach(btn=>{
+    btn.addEventListener("click", function(){
+      handleDeleteUser(this.dataset.username);
+    });
+  });
+}
+
+function handleDeleteUser(username){
+  const users = getUsers();
+  const target = users.find(u=>u.username === username);
+  const current = getCurrentUser();
+  if(!target) return;
+  if(current && target.username === current.username){
+    toast("You can't delete the account you're logged in as.");
+    return;
+  }
+  const adminCount = users.filter(u=>u.role === "admin").length;
+  if(target.role === "admin" && adminCount <= 1){
+    toast("At least one admin account must remain.");
+    return;
+  }
+  setUsers(users.filter(u=>u.username !== username));
+  logActivity(`Removed user account <b>${target.username}</b>.`);
+  renderUsers();
+  toast("User removed.");
+}
+
+document.getElementById("addUserForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const username = document.getElementById("uUsername").value.trim();
+  const password = document.getElementById("uPassword").value;
+  const email = document.getElementById("uEmail").value.trim();
+  const contact = document.getElementById("uContact").value.trim();
+  const role = document.getElementById("uRole").value;
+  const users = getUsers();
+
+  if(users.some(u => u.username === username)){
+    toast("That username is already taken.");
+    return;
+  }
+  users.push({ username, password, role, email, contact });
+  setUsers(users);
+  logActivity(`Added new user <b>${username}</b> (role: ${role === "admin" ? "Admin" : "Encoder"}).`);
+  toast("User added.");
+  this.reset();
+  renderUsers();
+});
+
+document.getElementById("pinForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const pin = document.getElementById("newPin").value.trim();
+  const confirm = document.getElementById("confirmPin").value.trim();
+  if(!/^[0-9]{4,6}$/.test(pin)){
+    toast("PIN must be 4–6 digits.");
+    return;
+  }
+  if(pin !== confirm){
+    toast("PIN codes do not match.");
+    return;
+  }
+  setAdminPin(pin);
+  logActivity("Updated the data-deletion PIN.");
+  toast("Deletion PIN updated.");
+  this.reset();
+});
+
+/* ---------- Dashboard / charts (self-contained, no external library) ---------- */
+
+function renderBarList(containerId, labels, data, color){
+  const el = document.getElementById(containerId);
+  if(labels.length === 0 || data.every(v=>v===0)){
+    el.innerHTML = '<div style="padding:20px 4px;color:var(--ink-600);font-size:13px;">No records match the current filter.</div>';
+    return;
+  }
+  const max = Math.max(...data, 1);
+  el.innerHTML = labels.map((label,i)=>{
+    const val = data[i];
+    const pct = Math.max(Math.round((val/max)*100), val>0 ? 3 : 0);
+    return `<div class="bar-row">
+      <div class="bar-label" title="${label}">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+      <div class="bar-value mono">${val}</div>
+    </div>`;
+  }).join("");
+}
+
+function drawPieChart(canvasId, legendId, labels, data, colors){
+  const canvas = document.getElementById(canvasId);
+  const dpr = window.devicePixelRatio || 1;
+  const size = canvas.clientWidth || 190;
+  canvas.width = Math.round(size*dpr);
+  canvas.height = Math.round(size*dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,size,size);
+
+  const total = data.reduce((a,b)=>a+b,0);
+  const cx = size/2, cy = size/2, r = size/2 - 4;
+
+  if(total === 0){
+    ctx.fillStyle = "#8a8574";
+    ctx.font = "12.5px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("No data", cx, cy);
+  } else {
+    let start = -Math.PI/2;
+    labels.forEach((label,i)=>{
+      const val = data[i];
+      if(val <= 0) return;
+      const angle = (val/total)*Math.PI*2;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,start,start+angle);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      start += angle;
+    });
+  }
+
+  const legend = document.getElementById(legendId);
+  legend.innerHTML = labels.map((label,i)=>
+    `<div class="chart-legend-item"><span class="chart-legend-dot" style="background:${colors[i % colors.length]};"></span>${label} (${data[i]})</div>`
+  ).join("");
+}
+
+function renderDashboard(){
+  const records = getFilteredRecords();
+  const total = getRecords().length;
+  const countLabel = document.getElementById("filterCountLabel");
+  countLabel.textContent = records.length === total
+    ? "Showing all records"
+    : `Showing ${records.length} of ${total} records`;
+  document.getElementById("statTotal").textContent = records.length;
+  document.getElementById("statRegions").textContent = new Set(records.map(r=>r.region)).size;
+  const avgAge = records.length ? Math.round(records.reduce((s,r)=>s+(r.age||0),0)/records.length) : 0;
+  document.getElementById("statAvgAge").textContent = avgAge;
+  const female = records.filter(r=>r.gender==="Female").length;
+  const male = records.filter(r=>r.gender==="Male").length;
+  document.getElementById("statRatio").textContent = male ? (female/male).toFixed(2)+" : 1" : "—";
+
+  // Region counts
+  const regionCounts = {};
+  records.forEach(r=>{
+    const key = r.region.split("—")[0].trim();
+    regionCounts[key] = (regionCounts[key]||0)+1;
+  });
+  const regionLabels = Object.keys(regionCounts).sort((a,b)=>regionCounts[b]-regionCounts[a]);
+  const regionData = regionLabels.map(l=>regionCounts[l]);
+
+  // Age brackets
+  const brackets = {"0–17":0,"18–30":0,"31–45":0,"46–60":0,"61+":0};
+  records.forEach(r=>{
+    const a = r.age||0;
+    if(a<=17) brackets["0–17"]++;
+    else if(a<=30) brackets["18–30"]++;
+    else if(a<=45) brackets["31–45"]++;
+    else if(a<=60) brackets["46–60"]++;
+    else brackets["61+"]++;
+  });
+
+  // Gender
+  const genderCounts = {Male:0,Female:0,Other:0};
+  records.forEach(r=>{ genderCounts[r.gender] = (genderCounts[r.gender]||0)+1; });
+
+  // Marital status
+  const maritalCounts = {Single:0,Married:0,Widowed:0,Separated:0,Annulled:0};
+  records.forEach(r=>{ maritalCounts[r.maritalStatus] = (maritalCounts[r.maritalStatus]||0)+1; });
+
+  const palette = ["#1b2a4a","#e8a94d","#c1502e","#2f6e62","#8a7cc7","#cf8f30","#4a6fa5","#a6673f"];
+  const regionPalette = ["#1b2a4a","#e8a94d","#c1502e","#2f6e62","#8a7cc7","#cf8f30","#4a6fa5","#a6673f",
+    "#6f9c3d","#b3446c","#3f8f8f","#8c5b2f","#5c6bc0","#d68910","#556b2f","#9b3d3d","#2e5266"];
+
+  // Region: bar list when no filter is set, pie once a filter narrows the view
+  const isFiltered = !!(document.getElementById("filterRegion").value ||
+                         document.getElementById("filterGender").value ||
+                         document.getElementById("filterMarital").value);
+  document.getElementById("regionChartCard").classList.toggle("pie-mode", isFiltered);
+  document.getElementById("regionModeBadge").classList.toggle("hidden", !isFiltered);
+  document.getElementById("regionBarList").classList.toggle("hidden", isFiltered);
+  document.getElementById("regionPieWrap").classList.toggle("hidden", !isFiltered);
+
+  if(isFiltered){
+    drawPieChart("regionChart", "regionChartLegend", regionLabels, regionData, regionPalette);
+  } else {
+    renderBarList("regionBarList", regionLabels, regionData, "#1b2a4a");
+  }
+
+  drawPieChart("ageChart", "ageChartLegend", Object.keys(brackets), Object.values(brackets), palette);
+  drawPieChart("genderChart", "genderChartLegend", Object.keys(genderCounts), Object.values(genderCounts), ["#1b2a4a","#c1502e","#2f6e62"]);
+  drawPieChart("maritalChart", "maritalChartLegend", Object.keys(maritalCounts), Object.values(maritalCounts), palette.slice().reverse());
+}
+
+let __resizeTimer;
+window.addEventListener("resize", ()=>{
+  clearTimeout(__resizeTimer);
+  __resizeTimer = setTimeout(()=>{
+    if(!document.getElementById("view-dashboard").classList.contains("hidden")) renderDashboard();
+  }, 200);
+});
+
+/* ---------- Session restore ---------- */
+if(sessionStorage.getItem(SS_SESSION)){
+  enterApp();
+}
+</script>
+</body>
+</html>
